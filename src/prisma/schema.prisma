@@ -1,0 +1,88 @@
+// prisma/schema.prisma  (Prisma 7)
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../prisma/generated/prisma"
+  moduleFormat = "cjs" // NestJS draait standaard op CommonJS
+}
+
+// Prisma 7: de database-URL staat NIET meer hier, maar in prisma.config.ts
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DOCENT
+  STUDENT // MBO-student
+  CURSIST // NT2-cursist
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  teacherId    String?
+
+  readingList    ReadingListItem[]
+  readingProfile ReadingProfile? // NIEUW
+  teacher        User?  @relation("TeacherStudents", fields: [teacherId], references: [id], onDelete: SetNull)
+  students       User[] @relation("TeacherStudents")
+
+  @@map("users")
+  @@index([teacherId])
+}
+
+// Leeslijst: per gebruiker de ID's van boeken
+model ReadingListItem {
+  id      String   @id @default(cuid())
+  userId  String
+  bookId  String // ID van het boek (bijv. uit externe bron/API)
+  addedAt DateTime @default(now())
+  isRead  Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId]) // zelfde boek niet dubbel op één lijst
+  @@index([userId])
+  @@map("reading_list_items")
+}
+
+// ---------- NIEUW: leesprofiel (FR1) ----------
+
+enum ReadingLevel {
+  NIVEAU_2F      @map("2F")
+  NIVEAU_3F      @map("3F")
+  NIVEAU_3F_PLUS @map("3F+")
+}
+
+enum LengthPreference {
+  KORT
+  MIDDEL
+  LANG
+}
+
+enum ReadingGoal {
+  ONTSPANNING
+  TAAL_OEFENEN
+  INFORMATIE
+}
+
+model ReadingProfile {
+  id           String           @id @default(cuid())
+  userId       String           @unique
+  readingLevel ReadingLevel
+  genres       String[]
+  topics       String[]
+  lengthPref   LengthPreference?
+  readingGoal  ReadingGoal?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reading_profiles")
+}
