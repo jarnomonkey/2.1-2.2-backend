@@ -7,8 +7,6 @@ import { AuthService } from './auth/auth.service.js';
 import { UsersService } from './users/users.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
-import { RolesGuard } from './roles/roles.guard.js';
-import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -35,12 +33,6 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     BooksModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
