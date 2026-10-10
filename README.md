@@ -72,7 +72,6 @@ src/
   prisma/           Prisma-module, databaseclient en schema voor PostgreSQL
   reading-list/     Eigen leeslijst en leesstatussen
   reading-profile/  Leesniveau, genres, onderwerpen en leesdoel
-  roles/            Rollen-decorator en globale rollen-guard
   users/            Gebruikersbeheer en koppeling aan docenten
   main.ts           Bootstrap van de NestJS-applicatie
   app.module.ts     Rootmodule die alle featuremodules samenbrengt
@@ -105,6 +104,8 @@ Authorization: Bearer <access_token>
 ```
 
 De exacte requestvelden en autorisatieregels staan in de controllers en services van de betreffende map.
+
+De interactieve OpenAPI-documentatie is beschikbaar op `http://localhost:3000/docs` wanneer de API draait. Request bodies worden gevalideerd met DTO's en de globale `ValidationPipe`; onbekende velden worden verwijderd voordat ze de controller bereiken.
 
 ## Databases en Prisma
 
@@ -142,3 +143,5 @@ npm run build
 ```
 
 Voor wijzigingen aan HTTP-routes voeg je ook `npm run test:e2e` toe. De tests gebruiken dezelfde `.env`-variabelen als de applicatie; zorg dat de databases bereikbaar zijn.
+
+Bij een push of pull request voert de quality gate in `.github/workflows/quality.yml` automatisch `npm run lint`, `npm test` en `npm run build` uit. Een falende controle blokkeert de workflow.

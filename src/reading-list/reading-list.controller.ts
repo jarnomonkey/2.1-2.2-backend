@@ -13,12 +13,16 @@ import {
 } from '@nestjs/common';
 import { ReadingListService } from './reading-list.service.js';
 import { AuthGuard } from '../auth/auth.guard.js';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { BookIdDto, ReadStatusDto } from './reading-list.dto.js';
 
 // req.user wordt gevuld door de guard (het JWT-payload: { sub, email, role })
 type AuthedRequest = { user?: { sub: string; role?: string } };
 
 @UseGuards(AuthGuard)
 @Controller('reading-list')
+@ApiTags('reading-list')
+@ApiBearerAuth()
 export class ReadingListController {
   constructor(private readonly readingList: ReadingListService) {}
 
@@ -47,7 +51,7 @@ export class ReadingListController {
 
   // POST /reading-list  met body { "bookId": "..." }  ->  boek op je leeslijst zetten
   @Post()
-  add(@Req() req: AuthedRequest, @Body() body: { bookId?: unknown }) {
+  add(@Req() req: AuthedRequest, @Body() body: BookIdDto) {
     if (!req.user) throw new UnauthorizedException();
     this.assertNotTeacher(req);
     return this.readingList.add(req.user.sub, body?.bookId);
@@ -58,7 +62,7 @@ export class ReadingListController {
   addForStudent(
     @Req() req: AuthedRequest,
     @Param('userId') userId: string,
-    @Body() body: { bookId?: unknown },
+    @Body() body: BookIdDto,
   ) {
     if (!req.user) throw new UnauthorizedException();
     return this.readingList.addForStudent(req.user.sub, userId, body?.bookId);
@@ -77,7 +81,7 @@ export class ReadingListController {
   setReadStatus(
     @Req() req: AuthedRequest,
     @Param('bookId') bookId: string,
-    @Body() body: { isRead?: unknown },
+    @Body() body: ReadStatusDto,
   ) {
     if (!req.user) throw new UnauthorizedException();
     this.assertNotTeacher(req);

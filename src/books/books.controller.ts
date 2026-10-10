@@ -9,12 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BooksService } from './books.service.js';
-import { Book } from './book.schema.js';
 import { AuthGuard } from '../auth/auth.guard.js';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateBookDto } from './book.dto.js';
 
 type AuthedRequest = { user?: { role?: string } };
 
 @Controller('books')
+@ApiTags('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
@@ -26,8 +28,9 @@ export class BooksController {
   
 
   @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Post()
-  create(@Req() req: AuthedRequest, @Body() body: Partial<Book>) {
+  create(@Req() req: AuthedRequest, @Body() body: CreateBookDto) {
     if (!req.user) throw new UnauthorizedException();
     if (req.user.role !== 'DOCENT') {
       throw new ForbiddenException('Alleen docenten mogen boeken toevoegen');

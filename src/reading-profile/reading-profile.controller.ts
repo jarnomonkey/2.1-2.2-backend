@@ -9,16 +9,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
-import {
-
-  ReadingProfileService,
-} from './reading-profile.service.js';
-import type {ReadingProfileInput} from './reading-profile.service.js';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ReadingProfileService } from './reading-profile.service.js';
+import { SaveReadingProfileDto } from './reading-profile.dto.js';
 
 type AuthedRequest = { user?: { sub: string; role?: string } };
 
 @UseGuards(AuthGuard)
 @Controller('reading-profile')
+@ApiTags('reading-profile')
+@ApiBearerAuth()
 export class ReadingProfileController {
   constructor(private readonly service: ReadingProfileService) {}
 
@@ -32,7 +32,7 @@ export class ReadingProfileController {
 
   // PUT /reading-profile/me  ->  profiel opslaan of bijwerken
   @Put('me')
-  save(@Req() req: AuthedRequest, @Body() body: ReadingProfileInput) {
+  save(@Req() req: AuthedRequest, @Body() body: SaveReadingProfileDto) {
     if (!req.user) throw new UnauthorizedException();
     this.assertNotTeacher(req);
     return this.service.save(req.user.sub, body);
